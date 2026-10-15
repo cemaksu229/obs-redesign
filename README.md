@@ -6,6 +6,10 @@ Yaşar Üniversitesi OBS'nin öğrenci tarafı için hızlı, anlaşılır ve te
 
 > Tüm öğrenci, ders, şube ve not verileri kurgusaldır. Uygulama gerçek OBS'ye bağlanmaz.
 
+**Tanıtım videosu (2:11, İngilizce anlatım ve altyazı):** https://cemaksu229.github.io/obs-redesign/video/pusula-tanitim.mp4
+
+[![Tanıtım videosunu izle](docs/screenshots/video-kapak.jpg)](https://cemaksu229.github.io/obs-redesign/video/pusula-tanitim.mp4)
+
 ![Bugün ekranı](docs/screenshots/bugun.png)
 
 ## Çözdüğü sorunlar
