@@ -2,7 +2,7 @@
 
 Yaşar Üniversitesi OBS'nin öğrenci tarafı için hızlı, anlaşılır ve telefonda da rahat kullanılan bir yeniden tasarım konsepti. Odak noktası **ders kaydı** sırasında en sık yaşanan sorunlar.
 
-**Canlı demo:** https://aksucem283.github.io/obs-redesign/
+**Canlı demo:** https://cemaksu229.github.io/obs-redesign/
 
 > Tüm öğrenci, ders, şube ve not verileri kurgusaldır. Uygulama gerçek OBS'ye bağlanmaz.
 
