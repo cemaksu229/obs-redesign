@@ -288,17 +288,19 @@ const FIRST = ['Ayşe', 'Burak', 'Canan', 'Doğan', 'Ebru', 'Fikret', 'Gökçe',
 const LAST = ['Kılıçarslan', 'Tunalı', 'Erdem', 'Sezgin', 'Akbulut', 'Karaman', 'Özdemir', 'Yalçın', 'Demirtaş', 'Gürel', 'Aksoy', 'Ertan', 'Uysal', 'Bilgin', 'Çakır', 'Ekinci', 'Soylu', 'Tekin']
 const TITLES = ['Prof. Dr.', 'Doç. Dr.', 'Dr. Öğr. Üyesi', 'Dr. Öğr. Üyesi', 'Öğr. Gör.']
 
-function offeredThisTerm() {
+// parity 0 = Güz (1, 3, 5, 7. yarıyıllar), 1 = Bahar (2, 4, 6, 8. yarıyıllar)
+function offeredIn(parity) {
   const codes = new Set()
   for (const cur of Object.values(CURRICULA)) {
     cur.semesters.forEach((sem, i) => {
-      if (i % 2 !== 0) return // Güz: 1, 3, 5, 7. yarıyıllar
+      if (i % 2 !== parity) return
       sem.forEach((item) => { if (typeof item === 'string') codes.add(item) })
     })
   }
   Object.values(ELECTIVE_GROUPS).forEach((g) => g.pool.forEach((c) => codes.add(c)))
-  // Bahar dersi olup başarısız öğrenciler için güzde de açılan birkaç ders
-  ;['MATH 1132', 'PHYS 1122', 'MATH 3305', 'EEE 3718'].forEach((c) => codes.add(c))
+  // Başarısız öğrenciler için karşı dönemde de açılan birkaç ders
+  const extra = parity === 0 ? ['MATH 1132', 'PHYS 1122', 'MATH 3305', 'EEE 3718'] : ['MATH 1131', 'PHYS 1121', 'EEE 3435', 'ENGR 1115']
+  extra.forEach((c) => codes.add(c))
   return [...codes]
 }
 
@@ -311,15 +313,16 @@ function sectionCount(code) {
   return n < 3000 ? 2 : 1
 }
 
-export const SECTIONS = {} // code -> [{ no, instructor, capacity, enrolled, meetings }]
+export const SECTIONS = {} // Bu dönem (Güz): code -> [{ no, instructor, capacity, enrolled, meetings }]
+export const SPRING_SECTIONS = {} // Bir sonraki dönem (Bahar) için açıklanan şubeler
 
 // Aynı sınıfın (bölüm + yarıyıl) dersleri birbiriyle çakışmasın diye her "kohort" için dolu saatler tutulur.
 // Bir dersin 1. şubesi kohortlarına göre yerleştirilir; diğer şubeler serbest yerleşir (gerçekte de böyle).
-function cohortsOf(code) {
+function cohortsOf(code, parity = 0) {
   const out = []
   for (const [dept, cur] of Object.entries(CURRICULA)) {
     cur.semesters.forEach((sem, i) => {
-      if (i % 2 !== 0) return
+      if (i % 2 !== parity) return
       const inSem = sem.some((item) => item === code || (typeof item === 'object' && ELECTIVE_GROUPS[item.group].pool.includes(code) && item.group !== 'UNV'))
       if (inSem) out.push(`${dept}-${i + 1}`)
     })
@@ -327,7 +330,7 @@ function cohortsOf(code) {
   return out
 }
 
-const OCC = {} // kohort -> Set("gün-slot")
+let OCC = {} // kohort -> Set("gün-slot")
 function isFree(cohorts, day, start, len) {
   for (const c of cohorts) {
     const set = OCC[c] || new Set()
@@ -343,18 +346,19 @@ function occupy(cohorts, day, start, len) {
 }
 
 // Önce kohortu olan, çok saatli dersler yerleşsin
-function placementOrder(codes) {
-  return [...codes].sort((a, b) => cohortsOf(b).length - cohortsOf(a).length || (COURSES[b].credit + COURSES[b].lab) - (COURSES[a].credit + COURSES[a].lab))
+function placementOrder(codes, parity) {
+  return [...codes].sort((a, b) => cohortsOf(b, parity).length - cohortsOf(a, parity).length || (COURSES[b].credit + COURSES[b].lab) - (COURSES[a].credit + COURSES[a].lab))
 }
 
-function buildSections() {
-  for (const code of placementOrder(offeredThisTerm())) {
+function buildSections(target, parity) {
+  OCC = {}
+  for (const code of placementOrder(offeredIn(parity), parity)) {
     const course = COURSES[code]
     if (!course) continue
-    const rnd = mulberry32(hashStr(code))
+    const rnd = mulberry32(hashStr(parity === 0 ? code : `${code}#Bahar`))
     const pick = (arr) => arr[Math.floor(rnd() * arr.length)]
     const count = sectionCount(code)
-    const cohorts = cohortsOf(code)
+    const cohorts = cohortsOf(code, parity)
     const list = []
     for (let s = 1; s <= count; s++) {
       const meetings = []
@@ -411,7 +415,12 @@ function buildSections() {
         meetings,
       })
     }
-    SECTIONS[code] = list
+    target[code] = list
+  }
+  if (parity === 1) {
+    // Gelecek dönemin kaydı henüz açılmadı: kontenjanların hepsi boş
+    Object.values(target).forEach((list) => list.forEach((sec) => { sec.enrolled = 0 }))
+    return
   }
   // Demo için bilinçli olarak tam dolu birkaç şube (kontenjan kuralını göstermek için)
   const FULL = [['EEE 3134', 1], ['CE 4650', 1], ['MATH 1131', 2], ['PHYS 1121', 1], ['EEE 4250', 1], ['IE 3320', 1], ['BA 3210', 1], ['EEE 4705', 1]]
@@ -420,12 +429,19 @@ function buildSections() {
     if (sec) sec.enrolled = sec.capacity
   }
 }
-buildSections()
+buildSections(SECTIONS, 0)
+buildSections(SPRING_SECTIONS, 1)
+
+export const NEXT_TERM = {
+  id: '2026-2027-Bahar',
+  label: '2026-2027 Bahar',
+  opensAt: '2027-02-01T10:00:00',
+}
 
 export function sectionKey(code, no) {
   return `${code}#${no}`
 }
 
-export function findSection(code, no) {
-  return (SECTIONS[code] || []).find((s) => s.no === no)
+export function findSection(code, no, source = SECTIONS) {
+  return (source[code] || []).find((s) => s.no === no)
 }

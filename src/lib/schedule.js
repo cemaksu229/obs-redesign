@@ -1,10 +1,10 @@
 import { COURSES, SECTIONS, findSection, SLOTS, DAYS } from '../data/catalog.js'
 
 // Seçili şubelerden haftalık blok listesi üretir.
-export function blocksFor(selection) {
+export function blocksFor(selection, source = SECTIONS) {
   const blocks = []
   for (const { code, no } of selection) {
-    const sec = findSection(code, no)
+    const sec = findSection(code, no, source)
     if (!sec) continue
     sec.meetings.forEach((m, i) => {
       blocks.push({ id: `${code}#${no}#${i}`, code, no, name: COURSES[code].name, ...m, instructor: sec.instructor })
@@ -18,8 +18,8 @@ function overlaps(a, b) {
 }
 
 // Aynı gün ve saatte çakışan dersleri bulur.
-export function findConflicts(selection) {
-  const blocks = blocksFor(selection)
+export function findConflicts(selection, source = SECTIONS) {
+  const blocks = blocksFor(selection, source)
   const pairs = []
   const seen = new Set()
   for (let i = 0; i < blocks.length; i++) {
@@ -38,9 +38,9 @@ export function findConflicts(selection) {
   return pairs
 }
 
-export function conflictCodes(selection, ignore = new Set()) {
+export function conflictCodes(selection, ignore = new Set(), source = SECTIONS) {
   const set = new Set()
-  findConflicts(selection).forEach((p) => {
+  findConflicts(selection, source).forEach((p) => {
     if (ignore.has(p.a) || ignore.has(p.b)) return
     set.add(p.a); set.add(p.b)
   })
@@ -48,10 +48,10 @@ export function conflictCodes(selection, ignore = new Set()) {
 }
 
 // Yalnızca izin verilen (F ile kalınan dersin) çakışmalarına giren dersler
-export function softConflictCodes(selection, ignore) {
-  const hard = conflictCodes(selection, ignore)
+export function softConflictCodes(selection, ignore, source = SECTIONS) {
+  const hard = conflictCodes(selection, ignore, source)
   const set = new Set()
-  findConflicts(selection).forEach((p) => {
+  findConflicts(selection, source).forEach((p) => {
     if (!(ignore.has(p.a) || ignore.has(p.b))) return
     if (!hard.has(p.a)) set.add(p.a)
     if (!hard.has(p.b)) set.add(p.b)
