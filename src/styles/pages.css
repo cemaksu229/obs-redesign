@@ -32,6 +32,7 @@
 .sw { width: 14px; height: 14px; border-radius: 4px; background: color-mix(in srgb, var(--navy) 18%, var(--surface)); border-left: 3px solid var(--navy); display: inline-block; }
 .sw.lab { background-image: repeating-linear-gradient(135deg, transparent 0 3px, color-mix(in srgb, var(--navy) 25%, transparent) 3px 6px); }
 .sw.clash { border: 2px solid var(--red); background: var(--red-050); }
+.sw.soft { border: 1.5px dashed var(--gold); background: var(--gold-050); }
 .sw.st-done { background: var(--green-050); border-left-color: var(--green); }
 .sw.st-now { background: var(--navy-050); border-left-color: var(--navy); }
 .sw.st-failed { background: var(--red-050); border-left-color: var(--red); }

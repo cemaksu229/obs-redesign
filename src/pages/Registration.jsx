@@ -6,7 +6,7 @@ import WeekGrid from '../components/WeekGrid.jsx'
 import { Quota } from './Courses.jsx'
 import { norm } from '../components/CommandPalette.jsx'
 import { COURSES, SECTIONS, CURRICULA, ELECTIVE_GROUPS, DAYS_SHORT, findSection } from '../data/catalog.js'
-import { blocksFor, conflictCodes, solveSections, timeRange, findConflicts } from '../lib/schedule.js'
+import { blocksFor, conflictCodes, softConflictCodes, solveSections, timeRange, findConflicts } from '../lib/schedule.js'
 import { validate, mustRetake, overlapAllowed } from '../lib/rules.js'
 import { calendarState, formatDate, relativeDay } from '../lib/dates.js'
 
@@ -27,7 +27,9 @@ export default function Registration() {
   const [solverMsg, setSolverMsg] = useState(null)
 
   const check = validate(student, sel)
-  const clashSet = conflictCodes(sel)
+  const allowed = overlapAllowed(student)
+  const clashSet = conflictCodes(sel, allowed)
+  const softSet = softConflictCodes(sel, allowed)
   const selected = new Map(sel.map((s) => [s.code, s.no]))
   const cal = calendarState()
   const addDrop = cal.items.find((e) => e.id === 'ekle')
@@ -55,7 +57,7 @@ export default function Registration() {
   const autoFix = () => {
     const codes = sel.map((s) => s.code)
     const fixed = Object.fromEntries(sel.filter((s) => s.code.endsWith('4830')).map((s) => [s.code, s.no]))
-    const res = solveSections(codes, { fixed, limit: 1, ignore: overlapAllowed(student) })
+    const res = solveSections(codes, { fixed, limit: 1, ignore: allowed })
     if (res.length) {
       const changed = res[0].filter((r) => selected.get(r.code) !== r.no).length
       setRegistration({ ...reg, selection: sel.map((s) => res[0].find((r) => r.code === s.code)) })
@@ -92,6 +94,7 @@ export default function Registration() {
             <span className="code">{code}</span> {COURSES[code].name}
             {level === 'error' && isSel && <XCircle size={16} weight="fill" color="var(--red)" aria-label="sorun var" />}
             {clashSet.has(code) && <span className="badge red">Çakışma</span>}
+            {softSet.has(code) && <span className="badge gold">İzinli çakışma</span>}
           </div>
           <div className="small muted">{COURSES[code].ects} AKTS{COURSES[code].prereq.length ? ` · Ön koşul: ${COURSES[code].prereq.join(', ')}` : ''}{COURSES[code].distance ? ' · Uzaktan' : ''}</div>
           {isSel && secs.length > 1 && !locked && (
@@ -229,7 +232,7 @@ export default function Registration() {
               <p className="small muted" style={{ marginTop: 6 }}>{check.limits.reason}. Staj limite dahil değil.</p>
             </div>
 
-            <WeekGrid blocks={blocks} ghosts={ghosts} conflicts={clashSet} showNow={false} emptyText="Ders ekledikçe programın burada oluşacak." />
+            <WeekGrid blocks={blocks} ghosts={ghosts} conflicts={clashSet} softConflicts={softSet} showNow={false} emptyText="Ders ekledikçe programın burada oluşacak." />
 
             {!locked && (
               <div className="issues panel" aria-live="polite">

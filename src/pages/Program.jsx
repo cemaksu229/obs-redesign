@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom'
 import { CalendarBlank, Warning, MonitorPlay } from '@phosphor-icons/react'
 import { useApp } from '../state/AppState.jsx'
 import WeekGrid, { colorIndex } from '../components/WeekGrid.jsx'
-import { blocksFor, findConflicts, conflictCodes, timeRange } from '../lib/schedule.js'
+import { blocksFor, findConflicts, conflictCodes, softConflictCodes, timeRange } from '../lib/schedule.js'
 import { COURSES, findSection, DAYS_SHORT, TERM } from '../data/catalog.js'
-import { selectionEcts, validate } from '../lib/rules.js'
+import { selectionEcts, validate, overlapAllowed } from '../lib/rules.js'
 import { downloadIcs } from '../lib/ics.js'
 
 export default function Program() {
@@ -15,7 +15,9 @@ export default function Program() {
   const sel = student.registration.selection
   const blocks = blocksFor(sel)
   const conflicts = findConflicts(sel)
-  const clashSet = conflictCodes(sel)
+  const allowed = overlapAllowed(student)
+  const clashSet = conflictCodes(sel, allowed)
+  const softSet = softConflictCodes(sel, allowed)
   // F ile kalınan dersin çakışmasına kurallar izin veriyor; bunları uyarı olarak göster
   const hardClash = validate(student, sel).issues.some((i) => i.level === 'error' && i.title.includes('çakışıyor'))
 
@@ -53,12 +55,13 @@ export default function Program() {
 
       {view === 'week' ? (
         <>
-          <WeekGrid blocks={blocks} conflicts={clashSet} onSelect={(b) => setFocus(b.code)} emptyText="Henüz ders seçmedin. Ders kaydından başlayabilirsin." />
+          <WeekGrid blocks={blocks} conflicts={clashSet} softConflicts={softSet} onSelect={(b) => setFocus(b.code)} emptyText="Henüz ders seçmedin. Ders kaydından başlayabilirsin." />
           <div className="legend small muted">
             <span><span className="sw" /> Teorik</span>
             <span><span className="sw lab" /> Uygulama / lab</span>
             <span><MonitorPlay size={14} aria-hidden="true" /> Uzaktan</span>
             <span><span className="sw clash" /> Çakışma</span>
+            {softSet.size > 0 && <span><span className="sw soft" /> İzinli çakışma (F)</span>}
           </div>
           {focus && <CourseDetail code={focus} sel={sel} onClose={() => setFocus(null)} />}
         </>

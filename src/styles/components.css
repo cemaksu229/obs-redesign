@@ -85,6 +85,7 @@
 .block-meta { color: var(--slate); font-size: 0.7rem; white-space: nowrap; }
 .block.lab { background-image: repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in srgb, var(--c) 8%, transparent) 6px 12px); }
 .block.clash { --c: var(--red); outline: 2px solid var(--red); outline-offset: -1px; }
+.block.soft { --c: var(--gold); outline: 1.5px dashed var(--gold); outline-offset: -1px; }
 .block.ghost { opacity: 0.75; border-left-style: dashed; background: transparent; outline: 1.5px dashed var(--c); outline-offset: -1.5px; }
 .c0 { --c: #14306b; } .c1 { --c: #1f7a8c; } .c2 { --c: #7a4b8c; } .c3 { --c: #6b7a2e; }
 .c4 { --c: #9c4a3a; } .c5 { --c: #4a5fa8; } .c6 { --c: #2f7d4f; } .c7 { --c: #b07a12; }

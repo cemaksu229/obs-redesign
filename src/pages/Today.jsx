@@ -3,7 +3,7 @@ import { MapPin, MonitorPlay, Warning, CheckCircle, X, Hourglass, Clock } from '
 import { useApp } from '../state/AppState.jsx'
 import { blocksFor, conflictCodes } from '../lib/schedule.js'
 import { standing, graduationProgress } from '../lib/progress.js'
-import { validate, selectionEcts } from '../lib/rules.js'
+import { validate, selectionEcts, overlapAllowed } from '../lib/rules.js'
 import { calendarState, formatDate, relativeDay } from '../lib/dates.js'
 import { ANNOUNCEMENTS } from '../data/calendar.js'
 import { DAYS, SLOTS } from '../data/catalog.js'
@@ -20,7 +20,7 @@ export default function Today() {
   const now = new Date()
   const reg = student.registration
   const blocks = blocksFor(reg.selection)
-  const clashes = conflictCodes(reg.selection)
+  const clashes = conflictCodes(reg.selection, overlapAllowed(student))
   const weekday = (now.getDay() + 6) % 7
   const isWeekend = weekday > 4
   const shownDay = isWeekend ? 0 : weekday

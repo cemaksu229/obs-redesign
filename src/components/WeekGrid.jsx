@@ -53,7 +53,7 @@ function nowInfo(now) {
   return { day, offset: minutes / 60 }
 }
 
-export default function WeekGrid({ blocks, conflicts = new Set(), ghosts = [], now = new Date(), showNow = true, onSelect, emptyText }) {
+export default function WeekGrid({ blocks, conflicts = new Set(), softConflicts = new Set(), ghosts = [], now = new Date(), showNow = true, onSelect, emptyText }) {
   const narrow = useNarrow()
   const today = nowInfo(now)
   const [mobileDay, setMobileDay] = useState(today.day < 5 ? today.day : 0)
@@ -100,11 +100,12 @@ export default function WeekGrid({ blocks, conflicts = new Set(), ghosts = [], n
               {rows.map((s) => <div key={s.index} className="week-cell" style={{ height: SLOT_H }} />)}
               {dayBlocks.map((b) => {
                 const clash = conflicts.has(b.code) && !b.ghost
+                const soft = !clash && softConflicts.has(b.code) && !b.ghost
                 return (
                   <button
                     type="button"
                     key={b.id}
-                    className={`block c${colorIndex(b.code)}${clash ? ' clash' : ''}${b.ghost ? ' ghost' : ''}${b.kind === 'U' ? ' lab' : ''}`}
+                    className={`block c${colorIndex(b.code)}${clash ? ' clash' : ''}${soft ? ' soft' : ''}${b.ghost ? ' ghost' : ''}${b.kind === 'U' ? ' lab' : ''}`}
                     style={{
                       top: (b.start - range.min) * SLOT_H + 2,
                       height: b.len * SLOT_H - 4,
@@ -113,10 +114,10 @@ export default function WeekGrid({ blocks, conflicts = new Set(), ghosts = [], n
                     }}
                     onClick={() => onSelect?.(b)}
                     tabIndex={onSelect ? 0 : -1}
-                    aria-label={`${b.code} ${b.name}, ${DAYS[b.day]} ${timeRange(b)}, ${b.room}${clash ? ', çakışıyor' : ''}`}
+                    aria-label={`${b.code} ${b.name}, ${DAYS[b.day]} ${timeRange(b)}, ${b.room}${clash ? ', çakışıyor' : soft ? ', izin verilen çakışma' : ''}`}
                   >
                     <span className="block-code">
-                      {clash && <Warning size={13} weight="fill" aria-hidden="true" />}
+                      {(clash || soft) && <Warning size={13} weight="fill" aria-hidden="true" />}
                       {b.online && <MonitorPlay size={13} weight="fill" aria-hidden="true" />}
                       {b.code}{b.kind === 'U' ? ' · Lab' : ''}
                     </span>

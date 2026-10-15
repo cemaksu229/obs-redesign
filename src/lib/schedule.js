@@ -38,9 +38,24 @@ export function findConflicts(selection) {
   return pairs
 }
 
-export function conflictCodes(selection) {
+export function conflictCodes(selection, ignore = new Set()) {
   const set = new Set()
-  findConflicts(selection).forEach((p) => { set.add(p.a); set.add(p.b) })
+  findConflicts(selection).forEach((p) => {
+    if (ignore.has(p.a) || ignore.has(p.b)) return
+    set.add(p.a); set.add(p.b)
+  })
+  return set
+}
+
+// Yalnızca izin verilen (F ile kalınan dersin) çakışmalarına giren dersler
+export function softConflictCodes(selection, ignore) {
+  const hard = conflictCodes(selection, ignore)
+  const set = new Set()
+  findConflicts(selection).forEach((p) => {
+    if (!(ignore.has(p.a) || ignore.has(p.b))) return
+    if (!hard.has(p.a)) set.add(p.a)
+    if (!hard.has(p.b)) set.add(p.b)
+  })
   return set
 }
 
