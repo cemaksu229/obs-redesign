@@ -1,6 +1,6 @@
-import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { Sun, CalendarDots, Books, Exam, GraduationCap, NotePencil, SquaresFour, MagnifyingGlass } from '@phosphor-icons/react'
+import { Sun, CalendarDots, Books, Exam, GraduationCap, NotePencil, SquaresFour, MagnifyingGlass, ListChecks, X } from '@phosphor-icons/react'
 import { useApp } from '../state/AppState.jsx'
 import { TERM } from '../data/catalog.js'
 import { validate } from '../lib/rules.js'
@@ -11,6 +11,7 @@ export const NAV = [
   { to: '/', label: 'Bugün', icon: Sun, end: true },
   { to: '/program', label: 'Ders programı', short: 'Program', icon: CalendarDots },
   { to: '/kayit', label: 'Ders kaydı', short: 'Kayıt', icon: NotePencil },
+  { to: '/onden-secim', label: 'Önden seçim', short: 'Ön seçim', icon: ListChecks },
   { to: '/dersler', label: 'Açılan dersler', short: 'Dersler', icon: Books },
   { to: '/notlar', label: 'Notlar ve devam', short: 'Notlar', icon: Exam },
   { to: '/mezuniyet', label: 'Mezuniyet', icon: GraduationCap },
@@ -28,7 +29,7 @@ export function BrandMark(props) {
 }
 
 export default function Shell() {
-  const { student } = useApp()
+  const { student, toast, clearToast, cartTimer } = useApp()
   const [paletteOpen, setPaletteOpen] = useState(false)
   const location = useLocation()
   const reg = student.registration
@@ -63,6 +64,7 @@ export default function Shell() {
             <NavLink key={to} to={to} end={end} className="nav-link">
               <Icon size={20} weight="duotone" aria-hidden="true" />
               {label}
+              {to === '/onden-secim' && cartTimer && <span className="badge gold">Sayıyor</span>}
               {to === '/kayit' && reg.status === 'draft' && (
                 <span className={`badge ${regErrors ? 'red' : 'gold'}`}>{regErrors ? `${regErrors} sorun` : 'Taslak'}</span>
               )}
@@ -106,6 +108,18 @@ export default function Shell() {
       </nav>
 
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
+
+      {toast && (
+        <div className="toast" role="status" key={toast.id}>
+          <ListChecks className="toast-ico" size={22} weight="duotone" aria-hidden="true" />
+          <div style={{ flex: 1 }}>
+            <strong>{toast.title}</strong>
+            <p className="small">{toast.body}</p>
+            {location.pathname !== '/onden-secim' && <Link to="/onden-secim" className="small toast-link" onClick={clearToast}>Ayrıntıları gör</Link>}
+          </div>
+          <button className="btn btn-ghost btn-sm icon-btn" onClick={clearToast} aria-label="Bildirimi kapat"><X size={16} /></button>
+        </div>
+      )}
     </div>
   )
 }

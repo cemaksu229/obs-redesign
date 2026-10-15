@@ -8,6 +8,7 @@ import Grades from './pages/Grades.jsx'
 import Graduation from './pages/Graduation.jsx'
 import Registration from './pages/Registration.jsx'
 import Other from './pages/Other.jsx'
+import PreSelect from './pages/PreSelect.jsx'
 
 function NotFound() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
             <Route index element={<Today />} />
             <Route path="program" element={<Program />} />
             <Route path="kayit" element={<Registration />} />
+            <Route path="onden-secim" element={<PreSelect />} />
             <Route path="dersler" element={<Courses />} />
             <Route path="notlar" element={<Grades />} />
             <Route path="mezuniyet" element={<Graduation />} />

@@ -162,7 +162,7 @@ button { font: inherit; color: inherit; }
   .sidebar { display: none; }
   .term-chip { display: none; }
   .bottom-nav {
-    display: grid; grid-template-columns: repeat(5, 1fr);
+    display: grid; grid-template-columns: repeat(6, 1fr);
     position: fixed; bottom: 0; left: 0; right: 0; z-index: var(--z-nav);
     background: var(--surface); border-top: 1px solid var(--line);
     padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
@@ -170,7 +170,7 @@ button { font: inherit; color: inherit; }
   .bottom-nav a {
     display: flex; flex-direction: column; align-items: center; gap: 2px;
     min-height: 48px; justify-content: center;
-    font-size: 0.7rem; color: var(--slate); text-decoration: none; border-radius: var(--r-md);
+    font-size: 0.66rem; color: var(--slate); text-decoration: none; border-radius: var(--r-md); white-space: nowrap;
   }
   .bottom-nav a.active { color: var(--navy); font-weight: 600; }
   .kbd { display: none; }

@@ -6,6 +6,7 @@ import { standing, graduationProgress } from '../lib/progress.js'
 import { validate, selectionEcts, overlapAllowed } from '../lib/rules.js'
 import { calendarState, formatDate, relativeDay } from '../lib/dates.js'
 import { ANNOUNCEMENTS } from '../data/calendar.js'
+import { NEXT_TERM } from '../data/catalog.js'
 import { DAYS, SLOTS } from '../data/catalog.js'
 import { formatGpa } from '../lib/grades.js'
 import { colorIndex } from '../components/WeekGrid.jsx'
@@ -16,7 +17,7 @@ function nowSlotPosition(now) {
 }
 
 export default function Today() {
-  const { student, dismissed, dismiss } = useApp()
+  const { student, dismissed, dismiss, cart } = useApp()
   const now = new Date()
   const reg = student.registration
   const blocks = blocksFor(reg.selection)
@@ -148,6 +149,18 @@ export default function Today() {
                   <p className="small">Kesinleştirilmeyen dersler danışmana gitmez.</p>
                 </div>
               </div>
+            )}
+          </section>
+
+          <section className="panel" aria-labelledby="pre-h">
+            <div className="panel-head">
+              <h2 id="pre-h">Önden seçim</h2>
+              <Link to="/onden-secim">{cart.status === 'processed' ? 'Sonucu gör' : 'Sepeti düzenle'}</Link>
+            </div>
+            {cart.status === 'processed' && cart.result ? (
+              <p>{NEXT_TERM.label} için {cart.result.summary.total} dersten {cart.result.summary.got} tanesi alındı.</p>
+            ) : (
+              <p>{NEXT_TERM.label} kaydı {relativeDay(new Date(NEXT_TERM.opensAt), now)} açılıyor. Sepetinde {cart.items.length} ders ve {cart.items.reduce((n, it) => n + it.backups.length, 0)} yedek var; kayıt anında senin yerine sırayla alınacak.</p>
             )}
           </section>
 
