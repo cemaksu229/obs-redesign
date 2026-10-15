@@ -14,9 +14,34 @@ cues = json.load(open(os.path.join(rec, "cues.json")))
 durations = json.load(open(os.path.join(audio_dir, "durations.json")))
 t0, end = frames["t0"], frames["end"]
 
+# ---------- Zaman haritası: sessiz bekleme bölümünü hızlandır ----------
+# Önden seçim demosunda "10 saniye sonra simüle et"e basıldıktan sonra anlatım bitince
+# yalnızca sayaç akıyor. Bu bölüm SPEED kat hızlandırılır; sonrası buna göre kayar.
+SPEED = 2.5
+TIMER_S = 10.0  # zamanlayıcı süresi: bildirim, tıklamadan 10 sn sonra gelir
+toast_t = cues["s20"]
+click_t = toast_t - TIMER_S - 0.05
+seg_a = cues["s19"] + durations["s19"] + 0.3
+seg_b = toast_t - 0.25
+SEGMENTS = [(seg_a, seg_b, SPEED)] if seg_b > seg_a else []
+
+def remap(t):
+    shift = 0.0
+    for a, b, f in SEGMENTS:
+        if t <= a:
+            break
+        if t < b:
+            return t - shift - (t - a) * (1 - 1 / f)
+        shift += (b - a) * (1 - 1 / f)
+    return t - shift
+
+end_raw = end
+end = remap(end)
+cues = {k: remap(v) for k, v in cues.items()}
+
 # ---------- Görüntü: değişken süreli kareler ----------
 lst = os.path.join(rec, "frames.txt")
-items = [(f["t"] - t0, f["file"]) for f in frames["frames"]]
+items = [(remap(f["t"] - t0), f["file"]) for f in frames["frames"]]
 with open(lst, "w") as fh:
     # İlk kare, kayıt başlangıcından itibaren gösterilsin
     first_t, first_f = items[0]
@@ -36,6 +61,26 @@ for line in script:
     track[start:start + len(data)] += data[: len(track) - start]
 peak = np.max(np.abs(track)) or 1
 track = track / peak * 0.89
+
+# Tik-tak: tıklamadan bildirime kadar her gerçek saniyede bir (hızlanan bölümde sıklaşır)
+def tick(freq, length=0.06):
+    n = int(length * sr)
+    t = np.arange(n) / sr
+    env = np.exp(-t * 70)
+    wave = np.sin(2 * np.pi * freq * t) + 0.35 * np.sin(2 * np.pi * freq * 2.7 * t)
+    return (wave * env * 0.22).astype(np.float32)
+
+TICK, TOCK = tick(2100), tick(1500)
+k = 0
+real = click_t + 0.15
+while real < toast_t - 0.1:
+    pos = int(remap(real) * sr)
+    snd = TICK if k % 2 == 0 else TOCK
+    if pos + len(snd) < len(track):
+        track[pos:pos + len(snd)] += snd
+    k += 1
+    real += 0.5  # yarım saniyede bir: tik, tak
+track = np.clip(track, -0.98, 0.98)
 wav = os.path.join(rec, "voice.wav")
 sf.write(wav, track, sr)
 
