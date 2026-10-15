@@ -19,9 +19,23 @@ Mevcut OBS gezilerek çıkarılan sorunlar ve Pusula'daki karşılıkları ([ayr
 | Ders programı saat saat uzun bir liste, çakışmalar görünmüyor | Haftalık ızgara, "şu an" çizgisi, çakışmalar kırmızı, telefonda gün gün görünüm, takvime aktarma (.ics) |
 | Açılan derslerde her şube ayrı satır, saat/hoca/kontenjan yok | Şubeler tek kartta: gün-saat, öğretim elemanı, kalan kontenjan çubuğu, bölüm/sınıf filtresi |
 | Kayıtta kontenjan, çakışma ve kurallar ancak "Kontrol et" sonrası görülüyor | Seçtikçe canlı program önizlemesi ve anlık kural kontrolü, tek tıkla **çakışmasız şube bulma** |
+| Uygun programı bulmak için şubeleri tek tek denemek gerekiyor | **Program önerici:** "Cuma boş olsun, 10'dan önce ders istemiyorum" yazarsın, tüm şube kombinasyonları denenip en uygun programlar önerilir |
 | Mezuniyet ilerlemesi "kurallar eksik" deyip hesaplanmıyor | AKTS, zorunlu, seçmeli ve staj halkaları, renkli müfredat haritası, kalan dersler listesi |
 | Her sayfa açılışında modal duyuru | Kapatılabilir duyurular ve öğrenciye özel "son gün" uyarısı ana sayfada |
 | Sayfaların adresi yok (iframe) | Her ekranın kendi adresi var, yer imi ve paylaşım yapılabilir |
+
+## Program önerici: istediğin haftayı yaz, programı o kursun
+
+OBS'de "Cuma boş olsun" demek için öğrenci şubeleri tek tek deneyip kâğıt üzerinde program çizmek zorunda. Pusula'da ders kaydı ekranındaki **"Tercihlerime göre program öner"** ile:
+
+- Tercihlerini düz Türkçe yazarsın: *"cuma boş olsun, 10'dan önce ders istemiyorum, arada boşluk az olsun"*. Pusula ne anladığını etiketlerle gösterir; istersen gün, en erken/en geç saat ve "az boşluk", "az güne topla" seçeneklerini butonlarla düzeltirsin.
+- Seçtiğin derslerin **tüm şube kombinasyonları** denenir, kesin çakışanlar ve dolu şubeler elenir, kalanlar tercihlerine göre sıralanır.
+- Her öneri küçük bir haftalık önizleme, boş kalan günler, en erken/en geç saat, haftalık boşluk ve hangi tercihlerin tutmadığıyla gelir. **"Bu programı uygula"** şubeleri tek tıkla değiştirir.
+- Bir tercih imkânsızsa nedenini söyler: *"Cuma boş kalamaz: MATH 1131 dersinin açık olan her şubesinde cuma günü ders var."*
+
+Tercih ayrıştırma şu an kural tabanlı çalışıyor (gün adları, saatler, "boşluk", "az gün" gibi ifadeler). Bir sonraki adım, bu katmanı bir dil modeline bağlayıp serbest cümleleri ("salı öğleden sonra işteyim") de anlamak; bunun için uygulamanın bir sunucusu olması gerekir.
+
+![Program önerici](docs/screenshots/program-onerici.png)
 
 ## Önden seçim: kayıt saatinde orada olmana gerek yok
 
@@ -67,6 +81,7 @@ Sağ üstteki menüden öğrenci değiştirilebilir. Her biri farklı bir bölü
 | Deniz Arslan | Elektrik-Elektronik Müh., 4. sınıf | Taslak kayıt, alttan ders eksik, F ile kalınan dersin izinli çakışması |
 | Elif Karaca | Bilgisayar Müh., 3. sınıf | Onaylanmış kayıt, açıklanmış ara sınav notları |
 | Mert Yıldız | Endüstri Müh., 2. sınıf | Sınamalı (AGNO < 2,00), 32 AKTS sınırı, henüz ders seçmemiş |
+| Ece Yılmaz | Bilgisayar Müh., 1. sınıf | Kaydını henüz yapmamış yeni öğrenci: program önericiyi denemek için en iyisi |
 | Zeynep Aydoğan | İşletme, 1. sınıf | İlk dönem, 30 AKTS sınırı, transkript yok |
 
 Menüdeki "Bu öğrencinin kaydını demo başına al" seçeneği, sunum öncesi her şeyi sıfırlar.
@@ -89,7 +104,7 @@ Menüdeki "Bu öğrencinin kaydını demo başına al" seçeneği, sunum öncesi
 ```
 src/
   data/        kurgusal katalog, müfredatlar, şubeler, öğrenciler, akademik takvim
-  lib/         çakışma bulma ve şube çözücü, kayıt kuralları, önden seçim motoru, bildirimler, not ortalaması, mezuniyet hesabı
+  lib/         çakışma bulma ve şube çözücü, program önerici, kayıt kuralları, önden seçim motoru, bildirimler, not ortalaması, mezuniyet hesabı
   components/  kabuk, haftalık program ızgarası, arama paleti
   pages/       Bugün, Program, Kayıt, Önden seçim, Açılan dersler, Notlar, Mezuniyet, Belgeler
 ```
