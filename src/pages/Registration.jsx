@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, Trash, Lightning, CheckCircle, Warning, Info, XCircle, Lock, MagnifyingGlass, Hourglass, PaperPlaneTilt } from '@phosphor-icons/react'
+import { Plus, Trash, Lightning, CheckCircle, Warning, Info, XCircle, Lock, MagnifyingGlass, Hourglass, PaperPlaneTilt, Sparkle, ListPlus } from '@phosphor-icons/react'
+import Planner from '../components/Planner.jsx'
 import { useApp } from '../state/AppState.jsx'
 import WeekGrid from '../components/WeekGrid.jsx'
 import { Quota } from './Courses.jsx'
@@ -25,6 +26,7 @@ export default function Registration() {
   const [ghost, setGhost] = useState(null)
   const [query, setQuery] = useState('')
   const [solverMsg, setSolverMsg] = useState(null)
+  const [plannerOpen, setPlannerOpen] = useState(false)
 
   const check = validate(student, sel)
   const allowed = overlapAllowed(student)
@@ -79,6 +81,21 @@ export default function Registration() {
   const searchResults = query.trim()
     ? offered.filter((c) => norm(`${c} ${COURSES[c].name}`).includes(norm(query))).slice(0, 8)
     : []
+
+  const addSuggested = () => {
+    const codes = [...retake, ...thisTerm]
+    groups.forEach((g) => {
+      const c = ELECTIVE_GROUPS[g].pool.find((x) => SECTIONS[x] && !codes.includes(x))
+      if (c) codes.push(c)
+    })
+    const next = []
+    for (const code of codes) {
+      const secs = SECTIONS[code] || []
+      const no = (secs.find((x) => x.enrolled < x.capacity && findConflicts([...next, { code, no: x.no }]).length === 0) || secs.find((x) => x.enrolled < x.capacity) || secs[0])?.no
+      if (no) next.push({ code, no })
+    }
+    setSel(next)
+  }
 
   const blocks = blocksFor(sel)
   const ghosts = ghost ? blocksFor([ghost]).filter((g) => !(selected.get(g.code) === ghost.no)) : []
@@ -140,7 +157,30 @@ export default function Registration() {
               : 'Kayıt dönemi kapandı.'} Seçtiğin her ders sağdaki programa anında yerleşir.
           </p>
         </div>
+        {!locked && (
+          <div className="actions">
+            {sel.length === 0 && (
+              <button className="btn" onClick={addSuggested}><ListPlus size={18} aria-hidden="true" /> Müfredatımdaki dersleri ekle</button>
+            )}
+            <button className="btn btn-primary" onClick={() => setPlannerOpen((o) => !o)} disabled={sel.length < 2} aria-expanded={plannerOpen}>
+              <Sparkle size={18} weight="fill" aria-hidden="true" /> Tercihlerime göre program öner
+            </button>
+          </div>
+        )}
       </div>
+
+      {plannerOpen && !locked && sel.length >= 2 && (
+        <Planner
+          selection={sel}
+          ignore={allowed}
+          onClose={() => setPlannerOpen(false)}
+          onApply={(plan) => {
+            setSel(sel.map((s) => plan.find((p) => p.code === s.code) || s))
+            setPlannerOpen(false)
+            setSolverMsg({ ok: true, text: 'Seçtiğin program uygulandı. Kontrol listesini gözden geçirip kesinleştirebilirsin.' })
+          }}
+        />
+      )}
 
       <ol className="steps" aria-label="Kayıt adımları">
         {STEPS.map((s, i) => (
