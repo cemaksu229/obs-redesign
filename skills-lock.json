@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "product-launch-video": {
+      "source": "heygen-com/hyperframes",
+      "sourceType": "github",
+      "skillPath": "skills/product-launch-video/SKILL.md",
+      "computedHash": "c5d95afc26de07fe10e59d753eef66e804bcbc5a4e54759bf4d2057023c5b77a"
+    }
+  }
+}
