@@ -47,7 +47,7 @@ const RAW = [
     advisor: 'Doç. Dr. Leyla Tunalı',
     internshipDays: 20,
     // Ekle/bırak devam ediyor, seçim taslak hâlinde ve içinde bir çakışma var
-    registration: { status: 'draft', codes: ['EEE 4910', 'ENGR 4400', 'EEE 4830', 'MATH 3305', 'UFND 6220', 'EEE 4610', 'EEE 4560'], forceConflict: true },
+    registration: { status: 'draft', codes: ['EEE 4910', 'ENGR 4400', 'EEE 4830', 'MATH 3305', 'UFND 6220', 'EEE 4250', 'ESE 4240'], forceConflict: true },
     absences: { 'MATH 3305': 9, 'EEE 4910': 2, 'ENGR 4451': 3 },
     midterms: {},
   },
@@ -87,6 +87,22 @@ const RAW = [
     midterms: {},
   },
   {
+    id: 'ece',
+    name: 'Ece Yılmaz',
+    number: '26070001175',
+    dept: 'CE',
+    entryYear: 2026,
+    semester: 1,
+    mean: 3,
+    forced: {},
+    advisor: 'Dr. Öğr. Üyesi Onur Bilgin',
+    internshipDays: 0,
+    // Yeni öğrenci, kaydını henüz yapmadı: program önericiyi denemek için
+    registration: { status: 'draft', codes: [] },
+    absences: {},
+    midterms: {},
+  },
+  {
     id: 'zeynep',
     name: 'Zeynep Aydoğan',
     number: '26070004508',
@@ -109,7 +125,7 @@ function initialSelection(raw) {
   if (forceConflict) {
     // Kurgu: öğrenci şubeleri elle seçmiş ve bir çakışmayı fark etmemiş.
     const ignore = new Set(Object.entries(raw.forced).filter(([, l]) => l === 'F').map(([c]) => c))
-    const ok = solveSections(codes.slice(0, -1), { limit: 1, allowFull: true, ignore })[0] || codes.slice(0, -1).map((c) => ({ code: c, no: 1 }))
+    const ok = solveSections(codes.slice(0, -1), { limit: 1, ignore })[0] || codes.slice(0, -1).map((c) => ({ code: c, no: 1 }))
     const last = codes[codes.length - 1]
     // Son ders için, başka bir şubesi çakışmasız olduğu hâlde çakışan şubeyi seç (çözücü düzeltebilsin)
     const hard = (sel) => findConflicts(sel).some((p) => !ignore.has(p.a) && !ignore.has(p.b))

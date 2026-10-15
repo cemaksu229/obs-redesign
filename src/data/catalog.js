@@ -360,13 +360,19 @@ function buildSections(target, parity) {
     const count = sectionCount(code)
     const cohorts = cohortsOf(code, parity)
     const list = []
+    let firstDays = []
     for (let s = 1; s <= count; s++) {
       const meetings = []
-      const respect = s === 1 ? cohorts : []
-      const place = (len, minStart, maxStart, avoidDays = []) => {
+      // Aynı numaralı şubeler kendi aralarında çakışmasın (bölümlerin "paralel şube" planlaması)
+      const respect = s === 1 ? cohorts : cohorts.map((c) => `${c}#${s}`)
+      // Gerçekte olduğu gibi: diğer şubeler mümkünse 1. şubeden farklı günlere konur
+      const otherDays = s === 1 ? [] : firstDays
+      const place = (len, minStart, maxStart, avoidDays = [], preferDays = []) => {
         for (let tries = 0; tries < 80; tries++) {
           const day = Math.floor(rnd() * 5)
+          if (preferDays.length && !preferDays.includes(day) && tries < 50) continue
           if (avoidDays.includes(day) && tries < 60) continue
+          if (otherDays.includes(day) && tries < 40) continue
           const start = minStart + Math.floor(rnd() * (maxStart - minStart + 1))
           if (isFree(respect, day, start, len) && !meetings.some((m) => m.day === day && start < m.start + m.len && m.start < start + len)) {
             occupy(respect, day, start, len)
@@ -398,11 +404,13 @@ function buildSections(target, parity) {
           meetings.push({ ...p, len: t, room, kind: 'T' })
         }
         if (course.lab) {
-          const p = place(course.lab, 3, 8, meetings.map((m) => m.day))
+          // Uygulama saatleri çoğunlukla teorik dersle aynı gün, öğleden sonra
+          const p = place(course.lab, 3, 8, [], meetings.map((m) => m.day))
           meetings.push({ ...p, len: course.lab, room: `${building}${pick([1, 2])}L${Math.floor(rnd() * 9) + 1}`, kind: 'U' })
         }
       }
       meetings.sort((a, b) => a.day - b.day || a.start - b.start)
+      if (s === 1) firstDays = [...new Set(meetings.map((m) => m.day))]
       // Doluluk: çoğu dolmamış, bazıları tam dolu
       const enrolled = course.distance
         ? Math.floor(600 + rnd() * 700)
@@ -423,7 +431,7 @@ function buildSections(target, parity) {
     return
   }
   // Demo için bilinçli olarak tam dolu birkaç şube (kontenjan kuralını göstermek için)
-  const FULL = [['EEE 3134', 1], ['CE 4650', 1], ['MATH 1131', 2], ['PHYS 1121', 1], ['EEE 4250', 1], ['IE 3320', 1], ['BA 3210', 1], ['EEE 4705', 1]]
+  const FULL = [['EEE 3134', 1], ['CE 4650', 1], ['MATH 1131', 2], ['PHYS 1121', 1], ['IE 3320', 1], ['BA 3210', 1], ['EEE 4705', 1]]
   for (const [code, no] of FULL) {
     const sec = (SECTIONS[code] || []).find((x) => x.no === no)
     if (sec) sec.enrolled = sec.capacity
