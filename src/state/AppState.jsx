@@ -31,7 +31,9 @@ export function AppStateProvider({ children }) {
   const [cartTimer, setCartTimer] = useState(stored.cartTimer || null)
   const [toast, setToast] = useState(null)
   const [dismissed, setDismissed] = useState(stored.dismissed || [])
-  const [theme, setTheme] = useState(stored.theme || 'system')
+  // ?theme=dark|light adresle tema seçmeye izin verir (sunum ve ekran kaydı için)
+  const urlTheme = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('theme') : null
+  const [theme, setTheme] = useState(['dark', 'light'].includes(urlTheme) ? urlTheme : stored.theme || 'system')
 
   useEffect(() => {
     save({ studentId, registrations, carts, cartTimer, dismissed, theme })
